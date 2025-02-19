@@ -9,6 +9,10 @@ class HomeController extends GetxController {
   /// Observable variable to manage the state of the context menu.
   final RxBool isMenuOpen = false.obs;
 
+  /// Observable variable to manage the isImageLoading. By default it will be
+  /// false.
+  final RxBool isImageLoading = false.obs;
+
   /// Toggles the context menu visibility.
   void toggleContextMenu() => isMenuOpen.toggle();
 
@@ -21,4 +25,7 @@ class HomeController extends GetxController {
 
   /// Sets the provided URL to the imageUrl variable.
   void setImageUrl(String url) => imageUrl.value = url;
+
+  /// Set the isImageLoading based on the image state.
+  void setImageLoading(bool isLoading) => isImageLoading.value = isLoading;
 }

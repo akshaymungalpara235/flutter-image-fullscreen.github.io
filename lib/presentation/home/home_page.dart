@@ -1,4 +1,5 @@
-import 'dart:ui' as ui;
+import 'dart:async';
+import 'dart:ui_web' as ui;
 import 'dart:html' as html;
 import 'package:demo_project/presentation/home/home_controller.dart';
 import 'package:demo_project/utils/constants/app_strings.dart';
@@ -19,6 +20,9 @@ class HomePage extends StatelessWidget {
 
   /// Unique identifier for the image view.
   String imageViewId = '';
+
+  StreamSubscription<html.Event>? imageLoading;
+  StreamSubscription<html.Event>? imageLoadError;
 
   /// Toggles full-screen mode on and off.
   void toggleFullscreen() {
@@ -42,6 +46,17 @@ class HomePage extends StatelessWidget {
       ..style.height = '100%'
       ..style.borderRadius = '12px';
 
+    imageLoading = imageElement.onLoad.listen((event) {
+      _homeController.isImageLoading(false);
+      imageLoading?.cancel();
+    });
+
+    imageLoadError = imageElement.onError.listen((event) {
+      showAlert(AppStrings.pleaseEnterValidURL);
+      _resetImage();
+      imageLoadError?.cancel();
+    });
+
     // ignore: undefined_prefixed_name
     ui.platformViewRegistry
         .registerViewFactory(uniqueId, (int viewId) => imageElement);
@@ -49,8 +64,18 @@ class HomePage extends StatelessWidget {
     imageViewId = uniqueId;
   }
 
+  void _resetImage() {
+    urlController.text = AppStrings.emptyString;
+    _homeController.setImageUrl(urlController.text);
+  }
+
   /// Loads an image from the provided URL and registers it for display.
   void loadImage() {
+    if (urlController.text.isEmpty) {
+      showAlert(AppStrings.urlCantBeEmpty);
+      return;
+    }
+    _homeController.isImageLoading(true);
     _homeController.setImageUrl(urlController.text);
     registerImageView(_homeController.imageUrl.value);
   }
@@ -66,7 +91,7 @@ class HomePage extends StatelessWidget {
             Center(
               child: Padding(
                 padding:
-                const EdgeInsets.symmetric(vertical: 100, horizontal: 16),
+                    const EdgeInsets.symmetric(vertical: 100, horizontal: 16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -113,10 +138,12 @@ class HomePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: _homeController.imageUrl.isNotEmpty
-                ? HtmlElementView(viewType: imageViewId)
+                ? _homeController.isImageLoading.value
+                    ? const Center(child: CircularProgressIndicator())
+                    : HtmlElementView(viewType: imageViewId)
                 : const Center(
-              child: Text(AppStrings.enterAnImageUrl),
-            ),
+                    child: Text(AppStrings.enterAnImageUrl),
+                  ),
           ),
         ),
       ),
@@ -177,6 +204,30 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Alert mainly used to show the warnings and errors!
+  void showAlert(String content) {
+    Get.snackbar(
+      AppStrings.warning, // Title (optional)
+      content, // Message content
+      snackPosition: SnackPosition.TOP, // Show at the top
+      backgroundColor: Colors.black.withOpacity(0.8),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(16),
+      borderRadius: 8,
+      duration: const Duration(seconds: 3), // Auto-dismiss after 3 seconds
+      isDismissible: true, // Allow swipe to dismiss
+      mainButton: TextButton(
+        onPressed: () {
+          Get.back(); // Close the Snackbar
+        },
+        child: const Text(
+          AppStrings.ok,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 }
