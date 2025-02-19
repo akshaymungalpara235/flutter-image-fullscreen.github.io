@@ -34325,7 +34325,7 @@ r=s==null?null:s.content
 s=r==null
 if(!s)self.window.console.warn("The `assetBase` meta tag is now deprecated.\nUse engineInitializer.initializeEngine(config) instead.\nSee: https://docs.flutter.dev/development/platform-integration/web/initialization")
 q=this.b=s?"":r
-s=q}return A.Qb(B.ib,s+"flutter-image-fullscreen.github.io/assets/"+a,B.a2,!1)}}
+s=q}return A.Qb(B.ib,s+"assets/"+a,B.a2,!1)}}
 A.tn.prototype={
 G(){return"BrowserEngine."+this.b}}
 A.j9.prototype={
